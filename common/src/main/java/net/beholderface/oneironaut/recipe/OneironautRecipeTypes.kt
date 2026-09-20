@@ -1,23 +1,32 @@
 package net.beholderface.oneironaut.recipe
 
+import dev.architectury.registry.registries.DeferredRegister
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeType
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.Identifier
 import net.beholderface.oneironaut.Oneironaut.MOD_ID
 import net.beholderface.oneironaut.Oneironaut.id
-import java.util.function.BiConsumer
 import net.beholderface.oneironaut.Oneironaut
-import net.minecraft.registry.Registry
 
 class OneironautRecipeTypes {
     companion object {
         const val debugMessages = false
+
+        /**
+         * Registered through Architectury instead of a raw [net.minecraft.registry.Registry.register] call.
+         * Forge locks the vanilla registries before mod construction, so registering into
+         * [RegistryKeys.RECIPE_TYPE] directly throws
+         * "Can not register to a locked registry. Modder should use NeoForge Register methods."
+         */
+        @JvmField
+        val DEFERRED: DeferredRegister<RecipeType<*>> =
+            DeferredRegister.create(MOD_ID, RegistryKeys.RECIPE_TYPE)
+
+        /** Attaches the deferred registrations to the loader's registry event. */
         @JvmStatic
-        fun registerTypes(r: BiConsumer<RecipeType<*>, Identifier>) {
-            for ((key, value) in TYPES) {
-                Oneironaut.boolLogger("Attempting to register type $value with key $key", debugMessages)
-                r.accept(value, key)
-            }
+        fun init() {
+            DEFERRED.register()
         }
 
         private val TYPES: MutableMap<Identifier, RecipeType<*>> = LinkedHashMap()
@@ -32,11 +41,9 @@ class OneironautRecipeTypes {
             }
             // never will be a collision because it's a new object
             TYPES[id(name)] = type
+            DEFERRED.register(name) { type }
             Oneironaut.boolLogger("Attempting to register type $name, with id ${type.toString()}", debugMessages)
             return type
         }
-
-        public fun <T> bind(registry: Registry<in T>): BiConsumer<T, Identifier> =
-            BiConsumer<T, Identifier> { t, id -> Registry.register(registry, id, t) }
     }
 }

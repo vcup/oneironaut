@@ -7,7 +7,6 @@ import at.petrak.hexcasting.api.casting.eval.CastingEnvironment
 import at.petrak.hexcasting.api.casting.getEntity
 import at.petrak.hexcasting.api.casting.iota.Iota
 import at.petrak.hexcasting.api.misc.MediaConstants
-import at.petrak.hexcasting.xplat.IXplatAbstractions
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.EnchantmentLevelEntry
@@ -16,6 +15,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.item.EnchantedBookItem
 import net.minecraft.item.ItemStack
 import net.beholderface.oneironaut.network.ItemUpdatePacket
+import net.beholderface.oneironaut.platform.OneironautPlatform
 import net.beholderface.oneironaut.casting.mishaps.MishapMissingEnchant
 import net.beholderface.oneironaut.registry.OneironautMiscRegistry
 import ram.talia.hexal.api.getItemEntityOrItemFrame
@@ -89,7 +89,7 @@ class OpApplyOvercastDamage : SpellAction {
                     stack.addEnchantment(it.key, it.value)
                 }
             }
-            IXplatAbstractions.INSTANCE.sendPacketNear(stack.holder?.pos, 128.0, env.world, ItemUpdatePacket(stack, holder))
+            OneironautPlatform.sendNear(stack.holder?.pos, 128.0, env.world, ItemUpdatePacket(stack, holder))
         }
 
     }

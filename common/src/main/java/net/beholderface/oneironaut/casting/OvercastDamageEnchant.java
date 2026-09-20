@@ -6,7 +6,9 @@ import at.petrak.hexcasting.common.lib.HexDamageTypes;
 import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.ktxt.AccessorWrappers;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
+import net.beholderface.oneironaut.OneironautDamage;
 import net.beholderface.oneironaut.network.ParticleBurstPacket;
+import net.beholderface.oneironaut.platform.OneironautPlatform;
 import net.beholderface.oneironaut.registry.OneironautTags;
 import net.minecraft.enchantment.DamageEnchantment;
 import net.minecraft.enchantment.Enchantment;
@@ -38,7 +40,18 @@ import java.util.Map;
 
 public class OvercastDamageEnchant extends Enchantment {
     private static final Map<LivingEntity, Long> cooldownMap = new HashMap<>();
-    private static final FrozenPigment playerlessColor = FrozenPigment.DEFAULT.get();//new FrozenColorizer(HexItems.DYE_COLORIZERS.get(DyeColor.PURPLE).getDefaultStack(), Util.NIL_UUID);
+    /**
+     * Initialisation-on-demand holder: Hex Casting's default pigment is not available yet when this
+     * class is first initialised on Forge/NeoForge, so it cannot be captured in a static field of the
+     * outer class. The holder gives thread-safe, race-free lazy resolution.
+     */
+    private static final class PlayerlessColor {
+        static final FrozenPigment VALUE = FrozenPigment.DEFAULT.get();
+    }
+
+    private static FrozenPigment playerlessColor() {
+        return PlayerlessColor.VALUE;
+    }
     public OvercastDamageEnchant() {
         super(Rarity.RARE, EnchantmentTarget.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
     }
@@ -93,7 +106,7 @@ public class OvercastDamageEnchant extends Enchantment {
                 brainswept = IXplatAbstractions.INSTANCE.isBrainswept(mob);
             }
             boolean creative = target instanceof PlayerEntity player && (player.isSpectator() || player.isCreative());
-            DamageSource overcastSource = livingTarget.getDamageSources().create(HexDamageTypes.OVERCAST);
+            DamageSource overcastSource = OneironautDamage.overcast(livingTarget);
             if (!livingTarget.isInvulnerableTo(overcastSource) && !livingTarget.isDead() && !brainswept && !creative){
                 float oldHealth = livingTarget.getHealth();
                 float newHealth = oldHealth - (level / 2f);
@@ -115,14 +128,14 @@ public class OvercastDamageEnchant extends Enchantment {
                         //Brainsweeping.brainsweep(mob);
                         IXplatAbstractions.INSTANCE.setBrainsweepAddlData(mob);
                         if (user instanceof ServerPlayerEntity player){
-                            IXplatAbstractions.INSTANCE.sendPacketNear(target.getPos(), 128.0, (ServerWorld) mob.getWorld(), new ParticleBurstPacket(
+                            OneironautPlatform.sendNear(target.getPos(), 128.0, (ServerWorld) mob.getWorld(), new ParticleBurstPacket(
                                     target.getPos(), new Vec3d(0.0, 0.1, 0.0), 0.1, 0.025,
                                     IXplatAbstractions.INSTANCE.getPigment(player), 64, false));
                             world.playSoundFromEntity(null, mob, SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.PLAYERS, 1.0f, 1.0f);
                         } else {
-                            IXplatAbstractions.INSTANCE.sendPacketNear(target.getPos(), 128.0, (ServerWorld) mob.getWorld(), new ParticleBurstPacket(
+                            OneironautPlatform.sendNear(target.getPos(), 128.0, (ServerWorld) mob.getWorld(), new ParticleBurstPacket(
                                     target.getPos(), new Vec3d(0.0, 0.1, 0.0), 0.1, 0.025,
-                                    playerlessColor, 64, false));
+                                    playerlessColor(), 64, false));
                             world.playSoundFromEntity(null, mob, SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.BLOCKS, 0.5f, 1.0f);
                         }
                     }

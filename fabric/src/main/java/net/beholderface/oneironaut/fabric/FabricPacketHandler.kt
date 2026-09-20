@@ -16,7 +16,7 @@ object FabricPacketHandler {
         ClientPlayNetworking.registerGlobalReceiver(ItemUpdatePacket.ID, makeClientBoundHandler(ItemUpdatePacket::deserialise, ItemUpdatePacket::handle))
         ClientPlayNetworking.registerGlobalReceiver(UnBrainsweepPacket.ID, makeClientBoundHandler(UnBrainsweepPacket::deserialise, UnBrainsweepPacket::handle))
         ClientPlayNetworking.registerGlobalReceiver(SpoopyScreamPacket.ID, makeClientBoundHandler(SpoopyScreamPacket::deserialise, SpoopyScreamPacket::handle))
-        ClientPlayNetworking.registerGlobalReceiver(SpoopyScreamPacket.ID, makeClientBoundHandler(HoverliftAntiDesyncPacket::deserialise, HoverliftAntiDesyncPacket::handle))
+        ClientPlayNetworking.registerGlobalReceiver(HoverliftAntiDesyncPacket.ID, makeClientBoundHandler(HoverliftAntiDesyncPacket::deserialise, HoverliftAntiDesyncPacket::handle))
     }
 
     private fun <T> makeClientBoundHandler(decoder: Function<PacketByteBuf, T>, handler: Consumer<T>): ClientPlayNetworking.PlayChannelHandler {

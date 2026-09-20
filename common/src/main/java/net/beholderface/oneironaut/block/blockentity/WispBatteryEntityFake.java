@@ -6,13 +6,11 @@ import at.petrak.hexcasting.api.utils.MediaHelper;
 import at.petrak.hexcasting.common.items.pigment.ItemDyePigment;
 import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.common.particles.ConjureParticleOptions;
-import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import kotlin.collections.CollectionsKt;
 import net.beholderface.oneironaut.block.WispBattery;
 import net.beholderface.oneironaut.block.WispBatteryFake;
-import net.beholderface.oneironaut.components.BoolComponent;
+import net.beholderface.oneironaut.platform.OneironautPlatform;
 import net.beholderface.oneironaut.registry.OneironautBlockRegistry;
-import net.beholderface.oneironaut.registry.OneironautComponents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -70,8 +68,7 @@ public class WispBatteryEntityFake extends BlockEntity {
                                     world.random.nextInt(HexItems.DYE_PIGMENTS.size()))),
                             Util.NIL_UUID
                     ));
-                    ComponentKey<BoolComponent> decorative = OneironautComponents.WISP_DECORATIVE;
-                    decorative.get(wisp).setValue(true);
+                    OneironautPlatform.setDecorativeWisp(wisp, true);
                     world.spawnEntity(wisp);
                 }
             }

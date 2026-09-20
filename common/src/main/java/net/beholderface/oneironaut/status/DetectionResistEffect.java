@@ -5,6 +5,7 @@ import at.petrak.hexcasting.api.casting.mishaps.Mishap;
 import at.petrak.hexcasting.api.misc.MediaConstants;
 import at.petrak.hexcasting.common.lib.HexDamageTypes;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
+import net.beholderface.oneironaut.OneironautDamage;
 import net.beholderface.oneironaut.casting.environments.ForcedMediaCostEnv;
 import net.beholderface.oneironaut.item.BottomlessMediaItem;
 import net.minecraft.entity.LivingEntity;
@@ -43,17 +44,17 @@ public class DetectionResistEffect extends StatusEffect {
                         CastingEnvironment env = new ForcedMediaCostEnv(player, Hand.MAIN_HAND);
                         long deficit = env.extractMedia(MediaConstants.DUST_UNIT / 10, false);
                         if (deficit > 0 && (time % 40) == 0){
-                            Mishap.Companion.trulyHurt(entity, entity.getDamageSources().create(HexDamageTypes.OVERCAST), 1f);
+                            Mishap.Companion.trulyHurt(entity, OneironautDamage.overcast(entity), 1f);
                         }
                     }
                 } else if (entity instanceof MobEntity){
                     if (mainStack.getItem() instanceof BottomlessMediaItem || offStack.getItem() instanceof BottomlessMediaItem || IXplatAbstractions.INSTANCE.isBrainswept((MobEntity) entity)){
                         //do nothing, they are immune
                     } else if ((time % 40) == 0) {
-                        Mishap.Companion.trulyHurt(entity, entity.getDamageSources().create(HexDamageTypes.OVERCAST), 1f);
+                        Mishap.Companion.trulyHurt(entity, OneironautDamage.overcast(entity), 1f);
                     }
                 } else if ((time % 40) == 0){
-                    Mishap.Companion.trulyHurt(entity, entity.getDamageSources().create(HexDamageTypes.OVERCAST), 1f);
+                    Mishap.Companion.trulyHurt(entity, OneironautDamage.overcast(entity), 1f);
                 }
             }
         }

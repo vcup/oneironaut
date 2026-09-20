@@ -166,7 +166,7 @@ public class OneironautBlockRegistry {
     public static RegistrySupplier<TranformingWallSkullBlock> TRANFORMING_WALL_SKULL = BLOCKS.register("transformingskull_wall", ()->new TranformingWallSkullBlock(AbstractBlock.Settings.copy(Blocks.ZOMBIE_HEAD)));
     public static RegistrySupplier<BlockEntityType<TransformingSkullBlockEntity>> TRANFORMING_SKULL_ENTITY = BLOCK_ENTITIES.register("transformingskull_entity", ()-> BlockEntityType.Builder.create(TransformingSkullBlockEntity::new, TRANFORMING_SKULL.get(), TRANFORMING_WALL_SKULL.get()).build(null));
 
-    public static final AbstractBlock.Settings INSTANT_BREAKER_SETTINGS = AbstractBlock.Settings.create().strength(-1.0F, 3600000.8F).nonOpaque().allowsSpawning(Blocks::never).noBlockBreakParticles().pistonBehavior(PistonBehavior.BLOCK).noCollision().ticksRandomly();
+    public static final AbstractBlock.Settings INSTANT_BREAKER_SETTINGS = AbstractBlock.Settings.create().strength(-1.0F, 3600000.8F).nonOpaque().allowsSpawning((state, world, pos, entityType) -> false).noBlockBreakParticles().pistonBehavior(PistonBehavior.BLOCK).noCollision().ticksRandomly();
     public static RegistrySupplier<InstantBreakingBlock> INSTANT_BREAKER_RIFTRESIDUE = BLOCKS.register("rift_residue", ()->new InstantBreakingBlock(INSTANT_BREAKER_SETTINGS));
     public static RegistrySupplier<BlockEntityType<InstantBreakingBlockEntity>> INSTANT_BREAKER_ENTITY = BLOCK_ENTITIES.register("instant_breaker_entity", ()-> BlockEntityType.Builder.create(InstantBreakingBlockEntity::new, INSTANT_BREAKER_RIFTRESIDUE.get()).build(null));
 

@@ -13,7 +13,7 @@ import net.beholderface.oneironaut.casting.idea.IdeaEntry
 import net.beholderface.oneironaut.casting.idea.IdeaInscriptionManager
 import net.beholderface.oneironaut.colorToClosestPigment
 import net.beholderface.oneironaut.getIdeaKey
-import net.beholderface.oneironaut.registry.OneironautComponents
+import net.beholderface.oneironaut.platform.OneironautPlatform
 import net.minecraft.entity.Entity
 import net.minecraft.util.DyeColor
 import net.minecraft.util.Util
@@ -41,8 +41,7 @@ class OpReleaseEntity : ConstMediaAction {
                     )
                 )
             }
-            val decorative = OneironautComponents.WISP_DECORATIVE
-            decorative[out].value = true
+            OneironautPlatform.setDecorativeWisp(out, true)
             env.world.spawnEntity(out)
             out
         } else {

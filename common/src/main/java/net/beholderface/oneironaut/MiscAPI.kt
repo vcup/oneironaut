@@ -12,8 +12,6 @@ import at.petrak.hexcasting.api.mod.HexConfig
 import at.petrak.hexcasting.api.pigment.FrozenPigment
 import at.petrak.hexcasting.common.lib.HexItems
 import at.petrak.hexcasting.common.lib.hex.HexIotaTypes
-import at.petrak.hexcasting.fabric.cc.HexCardinalComponents
-import at.petrak.hexcasting.xplat.IXplatAbstractions
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation
 import net.beholderface.oneironaut.casting.conceptmodification.ConceptModifier
 import net.beholderface.oneironaut.casting.conceptmodification.ConceptModifierManager
@@ -24,6 +22,7 @@ import net.beholderface.oneironaut.casting.iotatypes.SoulprintIota
 import net.beholderface.oneironaut.mixin.GeneralCastEnvInvoker
 import net.beholderface.oneironaut.mixin.IotaTypeInvoker
 import net.beholderface.oneironaut.network.UnBrainsweepPacket
+import net.beholderface.oneironaut.platform.OneironautPlatform
 import net.beholderface.oneironaut.recipe.OneironautRecipeTypes
 import net.beholderface.oneironaut.registry.OneironautMiscRegistry
 import net.minecraft.block.Block
@@ -351,12 +350,11 @@ fun MobEntity.unbrainsweep(){
     val patient = this
     if (!patient.world.isClient){
         //Oneironaut.LOGGER.info("Attempting to unbrainsweep ${this.name} client-side")
-        IXplatAbstractions.INSTANCE.sendPacketNear(patient.pos, 256.0, patient.world as ServerWorld, UnBrainsweepPacket(patient.id))
+        OneironautPlatform.sendNear(patient.pos, 256.0, patient.world as ServerWorld, UnBrainsweepPacket(patient.id))
     }/* else {
         Oneironaut.LOGGER.info("Attempting to unbrainsweep ${this.name} server-side")
     }*/
-    val component = HexCardinalComponents.BRAINSWEPT.get(patient)
-    component.isBrainswept = false
+    OneironautPlatform.clearBrainsweep(patient)
     patient.isAiDisabled = false
     val brain = patient.brain
     patient.goalSelector = GoalSelector(patient.world.profilerSupplier)

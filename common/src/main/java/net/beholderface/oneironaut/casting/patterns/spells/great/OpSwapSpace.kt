@@ -18,7 +18,7 @@ import net.beholderface.oneironaut.*
 import net.beholderface.oneironaut.casting.mishaps.MishapBadCuboid
 import net.beholderface.oneironaut.casting.mishaps.MishapNoNoosphere
 import net.beholderface.oneironaut.item.BottomlessMediaItem
-import net.fabricmc.fabric.api.dimension.v1.FabricDimensions
+import net.beholderface.oneironaut.platform.OneironautPlatform
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
@@ -255,7 +255,7 @@ class OpSwapSpace : SpellAction {
                     dim = originDim
                     box = originBox
                 }
-                FabricDimensions.teleport(caster, dim, TeleportTarget(box.minCorner().add(casterOffset), caster.velocity, caster.headYaw, caster.pitch))
+                OneironautPlatform.teleport(caster, dim, TeleportTarget(box.minCorner().add(casterOffset), caster.velocity, caster.headYaw, caster.pitch))
             }
             //this stuff is commented out because I can't figure out how to get the spell to load entities on the other side of the transfer
             /*for (pair in originEntityMap){

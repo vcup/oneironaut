@@ -1,7 +1,6 @@
 package net.beholderface.oneironaut.mixin;
 
 import at.petrak.hexcasting.api.casting.eval.CastingEnvironment;
-import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.beholderface.oneironaut.registry.OneironautTags;
 import net.minecraft.entity.Entity;
@@ -16,6 +15,7 @@ import net.beholderface.oneironaut.MiscAPIKt;
 import net.beholderface.oneironaut.Oneironaut;
 import net.beholderface.oneironaut.OneironautConfig;
 import net.beholderface.oneironaut.network.FireballUpdatePacket;
+import net.beholderface.oneironaut.platform.OneironautPlatform;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -73,7 +73,7 @@ public abstract class ImpulseRedirectFireballMixin {
             tracker.set(POWER_Y, (float) (explosive.powerX + deltaY));
             tracker.set(POWER_Z, (float) (explosive.powerX + deltaZ));
             if (!newPower.equals(oldPower)){
-                IXplatAbstractions.INSTANCE.sendPacketNear(explosive.getPos(), 128, env.getWorld(), new FireballUpdatePacket(newPower, explosive));
+                OneironautPlatform.sendNear(explosive.getPos(), 128, env.getWorld(), new FireballUpdatePacket(newPower, explosive));
             }
         }
     }

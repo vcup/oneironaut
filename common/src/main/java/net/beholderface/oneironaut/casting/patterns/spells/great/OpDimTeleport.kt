@@ -16,7 +16,7 @@ import at.petrak.hexcasting.common.lib.HexBlocks
 import at.petrak.hexcasting.xplat.IXplatAbstractions
 import net.beholderface.oneironaut.*
 import net.beholderface.oneironaut.casting.DepartureEntry
-import net.fabricmc.fabric.api.dimension.v1.FabricDimensions
+import net.beholderface.oneironaut.platform.OneironautPlatform
 import net.minecraft.block.Blocks
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
@@ -192,7 +192,7 @@ class OpDimTeleport : SpellAction {
                         BlockConjured.setColor(destination, floorSpot, colorizer)
                     }
                 } else {
-                    FabricDimensions.teleport(target, destination, TeleportTarget(Vec3d(x, y, z), target.velocity, target.yaw, target.pitch))
+                    OneironautPlatform.teleport(target, destination, TeleportTarget(Vec3d(x, y, z), target.velocity, target.yaw, target.pitch))
                     if (floorNeeded && !isFlying){
                         destination.setBlockState((floorSpot), HexBlocks.CONJURED_BLOCK.defaultState)
                         BlockConjured.setColor(destination, floorSpot, colorizer)

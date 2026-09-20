@@ -2,7 +2,6 @@ package net.beholderface.oneironaut.block;
 
 import at.petrak.hexcasting.api.pigment.FrozenPigment;
 import at.petrak.hexcasting.common.lib.HexItems;
-import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -18,6 +17,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.beholderface.oneironaut.network.ParticleBurstPacket;
+import net.beholderface.oneironaut.platform.OneironautPlatform;
 
 import java.util.UUID;
 
@@ -51,7 +51,19 @@ public class MediaGelBlock extends TransparentBlock {
         return 0.2F;
     }
 
-    private static final FrozenPigment purpleColorizer = new FrozenPigment(HexItems.DYE_PIGMENTS.get(DyeColor.PURPLE).getDefaultStack(), new UUID(0, 0));
+    /**
+     * Initialisation-on-demand holder: Hex Casting's item registry is not populated yet when this
+     * class is first initialised on Forge/NeoForge, so the pigment cannot be captured in a static
+     * field of the outer class. The holder gives thread-safe, race-free lazy resolution.
+     */
+    private static final class PurpleColorizer {
+        static final FrozenPigment VALUE =
+                new FrozenPigment(HexItems.DYE_PIGMENTS.get(DyeColor.PURPLE).getDefaultStack(), new UUID(0, 0));
+    }
+
+    private static FrozenPigment purpleColorizer() {
+        return PurpleColorizer.VALUE;
+    }
     @Override
     public void onSteppedOn(World world, BlockPos pos, BlockState state, Entity entity) {
         /*double d = Math.abs(entity.getVelocity().y);
@@ -61,12 +73,12 @@ public class MediaGelBlock extends TransparentBlock {
         }*/
         if(!entity.bypassesSteppingEffects() && !world.isClient && (world.getTime() % 10) == 0 && entity.isLiving()){
             Vec3d targetPos = entity.getPos().add(0, 0.2, 0);
-            IXplatAbstractions.INSTANCE.sendPacketNear(
+            OneironautPlatform.sendNear(
                     targetPos,
                     32.0,
                     (ServerWorld) world,
                     new ParticleBurstPacket(targetPos, new Vec3d(0, -0.02, 0), 0.2, 0,
-                            purpleColorizer, 20, false)
+                            purpleColorizer(), 20, false)
                     );
         }
         super.onSteppedOn(world, pos, state, entity);

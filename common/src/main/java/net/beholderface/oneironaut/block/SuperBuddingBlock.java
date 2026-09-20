@@ -81,7 +81,7 @@ public class SuperBuddingBlock extends Block /*extends BuddingAmethystBlock*/ {
         Vec3d particleCenter = Vec3d.ofCenter(new Vec3i(pos.getX(), pos.getY(), pos.getZ()));
         int limit = rand.nextBetween(3, 6);
         for (int i = 0; i < limit; i++){
-            world.addParticle(new ConjureParticleOptions(HoverElevatorBlockEntity.color),
+            world.addParticle(new ConjureParticleOptions(HoverElevatorBlockEntity.color()),
                     particleCenter.x + (((rand.nextGaussian() * 2) - 1) / 7), particleCenter.y + (((rand.nextGaussian() * 2) - 1) / 7),
                     particleCenter.z + (((rand.nextGaussian() * 2) - 1) / 7), 0.0, 0.0, 0.0);
         }

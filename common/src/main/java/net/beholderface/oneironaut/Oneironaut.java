@@ -61,16 +61,45 @@ public class Oneironaut {
 
 
     public static final Set<Pair<LivingEntity, StatusEffectInstance>> reapplicationSet = new HashSet<>();
-    public static void init() {
+    private static boolean earlyInitDone = false;
+    private static boolean lateInitDone = false;
+
+    /**
+     * Everything that has to be known before the loader freezes its registries.
+     * <p>
+     * Fabric runs this from the mod initializer; NeoForge runs it from the mod constructor, because
+     * Forge freezes the vanilla registries immediately after mod construction.
+     */
+    public static void initEarly() {
+        if (earlyInitDone) {
+            return;
+        }
+        earlyInitDone = true;
         LOGGER.info("why do they call it oven when you of in the cold food of out hot eat the food");
         OneironautMiscRegistry.init();
         OneironautBlockRegistry.init();
         OneironautItemRegistry.init();
         OneironautFeatureRegistry.init();
+        OneironautRecipeSerializer.init();
+        OneironautRecipeTypes.init();
+    }
+
+    /**
+     * Registers into Hex Casting's own registries and wires up the event listeners.
+     * <p>
+     * Hex Casting creates its registries from Forge's {@code NewRegistryEvent}, which fires after mod
+     * construction, so on NeoForge this must run from {@code FMLCommonSetupEvent} instead of the mod
+     * constructor: doing it in the constructor throws
+     * {@code IllegalStateException: Registry is already frozen (trying to add key
+     * ResourceKey[minecraft:root / hexcasting:iota_type])}. Fabric accepts both calls back to back.
+     */
+    public static void initLate() {
+        if (lateInitDone) {
+            return;
+        }
+        lateInitDone = true;
         OneironautIotaTypeRegistry.init();
         OneironautPatternRegistry.init();
-        OneironautRecipeSerializer.registerSerializers(OneironautRecipeTypes.Companion.bind(Registries.RECIPE_SERIALIZER));
-        OneironautRecipeTypes.registerTypes(OneironautRecipeTypes.Companion.bind(Registries.RECIPE_TYPE));
 
         LifecycleEvent.SERVER_STARTED.register((startedserver) ->{
             server = startedserver;

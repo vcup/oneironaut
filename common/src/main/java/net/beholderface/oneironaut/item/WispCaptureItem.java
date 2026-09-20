@@ -7,9 +7,9 @@ import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.common.items.magic.ItemMediaHolder;
 import at.petrak.hexcasting.common.lib.HexSounds;
 import at.petrak.hexcasting.common.msgs.MsgCastParticleS2C;
-import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import kotlin.collections.CollectionsKt;
 import net.beholderface.oneironaut.Oneironaut;
+import net.beholderface.oneironaut.platform.OneironautPlatform;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -158,7 +158,7 @@ public class WispCaptureItem extends ItemMediaHolder {
                 NBTHelper.putCompound(stackNbt, WISP_DATA_TAG, wispData);
                 ((Entity) wisp).kill();
                 Oneironaut.boolLogger("Captured wisp for " + cost / MediaConstants.DUST_UNIT + " dust", debugMessages);
-                IXplatAbstractions.INSTANCE.sendPacketNear(user.getEyePos(), 128.0, (ServerWorld) world,
+                OneironautPlatform.sendNear(user.getEyePos(), 128.0, (ServerWorld) world,
                         new MsgParticleLinesAck(CollectionsKt.listOf(user.getEyePos(), ((Entity) wisp).getPos().add(0.0, 0.05, 0.0)), wisp.pigment()));
                 world.playSoundFromEntity(null, user, RegistryEntry.of(HexSounds.CAST_HERMES), SoundCategory.PLAYERS, 1f, 1f, world.random.nextLong());
                 if (wisp instanceof TickingWisp tickingWisp){
@@ -211,7 +211,7 @@ public class WispCaptureItem extends ItemMediaHolder {
                 nbt.remove(WISP_DATA_TAG);
                 world.spawnEntity(wisp);
                 if (!world.isClient && world instanceof ServerWorld serverWorld) {
-                    IXplatAbstractions.INSTANCE.sendPacketNear(user.getEyePos(), 128.0, serverWorld,
+                    OneironautPlatform.sendNear(user.getEyePos(), 128.0, serverWorld,
                             new MsgParticleLinesAck(CollectionsKt.listOf(user.getEyePos(), ((Entity) wisp).getPos().add(0.0, 0.05, 0.0)), wisp.pigment()));
                     return true;
                 }
@@ -236,7 +236,7 @@ public class WispCaptureItem extends ItemMediaHolder {
             World world = user.getWorld();
             if (!world.isClient && world instanceof ServerWorld serverWorld){
                 world.playSoundFromEntity(null, user, RegistryEntry.of(HexSounds.ABACUS_SHAKE), SoundCategory.PLAYERS, 1f, 1f, world.random.nextLong());
-                IXplatAbstractions.INSTANCE.sendPacketNear(user.getEyePos(), 128.0, serverWorld, new MsgCastParticleS2C
+                OneironautPlatform.sendNear(user.getEyePos(), 128.0, serverWorld, new MsgCastParticleS2C
                         (ParticleSpray.burst(user.getPos().add(0.0, 0.125, 0.0), 1.0, 64), colorizer));
             }
         }

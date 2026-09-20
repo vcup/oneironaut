@@ -183,10 +183,18 @@ public class DisintegrationProtectionManager extends PersistentState {
             this.addHits(addedHits);
             //Oneironaut.LOGGER.info("Entry {} hit for {} points, for a total of {}", this.uuid.toString(), addedHits, this.getHits());
             boolean newlyBroken = (this.isBroken() && !startedBroken);
-            if (world != null){
+            if (world != null && world.getServer() != null){
                 PlaySoundS2CPacket hitSoundMessage = getHitMessage(pos, world, newlyBroken);
+                // ServerWorld#sendToPlayerIfNearby is private in vanilla and was only reachable through
+                // Fabric API's access widener, so its body is replicated here rather than approximated
+                // with PlayerManager#sendToAround, which would measure from the player's exact
+                // coordinates instead of vanilla's block position (a difference of up to ~1.7 blocks at
+                // the 32 block cutoff). Radius 32 and the "self world only" check are vanilla's, for a
+                // non-persistent (bl == false) message.
                 for (ServerPlayerEntity player : world.getPlayers()){
-                    world.sendToPlayerIfNearby(player, false, pos.x, pos.y, pos.z, hitSoundMessage);
+                    if (player.getBlockPos().isWithinDistance(new Vec3d(pos.x, pos.y, pos.z), 32.0)){
+                        player.networkHandler.sendPacket(hitSoundMessage);
+                    }
                 }
             }
             return newlyBroken;

@@ -10,9 +10,9 @@ import net.beholderface.oneironaut.MiscAPIKt;
 import net.beholderface.oneironaut.Oneironaut;
 import net.beholderface.oneironaut.block.HoverElevatorBlock;
 import net.beholderface.oneironaut.network.HoverliftAntiDesyncPacket;
+import net.beholderface.oneironaut.platform.OneironautPlatform;
 import net.beholderface.oneironaut.registry.OneironautBlockRegistry;
 import net.beholderface.oneironaut.registry.OneironautTags;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -44,7 +44,19 @@ public class HoverElevatorBlockEntity extends BlockEntity {
     public static final Map<LivingEntity, Integer> CLIENT_HOVER_MAP = new HashMap<>();
     private static Pair<Long, Boolean> LAST_CALL;// = new Pair<>(0L, null);
     private static final DirectionProperty FACING = HoverElevatorBlock.FACING;
-    public static final int color = new FrozenPigment(HexItems.DYE_PIGMENTS.get(DyeColor.PURPLE).getDefaultStack(), Util.NIL_UUID).getColorProvider().getColor(0f, Vec3d.ZERO);
+    /**
+     * Initialisation-on-demand holder: Hex Casting's item registry is not populated yet when this
+     * class is first initialised on Forge/NeoForge, so the colour cannot be captured in a static field
+     * of the outer class. The holder gives thread-safe, race-free lazy resolution.
+     */
+    private static final class DefaultColor {
+        static final int VALUE = new FrozenPigment(HexItems.DYE_PIGMENTS.get(DyeColor.PURPLE).getDefaultStack(), Util.NIL_UUID)
+                .getColorProvider().getColor(0f, Vec3d.ZERO);
+    }
+
+    public static int color() {
+        return DefaultColor.VALUE;
+    }
 
     private Box pairCuboid = null;
     private int level = 0;
@@ -96,7 +108,7 @@ public class HoverElevatorBlockEntity extends BlockEntity {
                 Vec3d entityVel = livingEntity.getVelocity();
                 if (world.isClient && world instanceof ClientWorld clientWorld){
                     clientWorld.addParticle(new ConjureParticleOptions(livingEntity instanceof PlayerEntity player ?
-                                    IXplatAbstractions.INSTANCE.getPigment(player).getColorProvider().getColor(world.getTime(), player.getPos()) : color),
+                                    IXplatAbstractions.INSTANCE.getPigment(player).getColorProvider().getColor(world.getTime(), player.getPos()) : color()),
                             entityPos.x + (((rand.nextGaussian() * 2) - 1) / 5), entityPos.y + (((rand.nextGaussian() * 2) - 1) / 5) + (rand.nextBetween(0, (int) (livingEntity.getHeight() * 20f)) / 20f),
                             entityPos.z + (((rand.nextGaussian() * 2) - 1) / 5), entityVel.x, entityVel.y + 0.1, entityVel.z);
                 }
@@ -105,7 +117,7 @@ public class HoverElevatorBlockEntity extends BlockEntity {
                 Vec3d particleCenter = Vec3d.ofCenter(new Vec3i(pos.getX(), pos.getY(), pos.getZ())).add(dirVec3d.multiply(0.5));
                 Vec3d dirVelVec = dirVec3d.multiply(0.25);
                 if (rand.nextBetween(1, 10) <= 3){
-                    clientWorld.addParticle(new ConjureParticleOptions(color),
+                    clientWorld.addParticle(new ConjureParticleOptions(color()),
                             particleCenter.x + (((rand.nextGaussian() * 2) - 1) / 7), particleCenter.y + (((rand.nextGaussian() * 2) - 1) / 7),
                             particleCenter.z + (((rand.nextGaussian() * 2) - 1) / 7), dirVelVec.x, dirVelVec.y, dirVelVec.z);
                 }
@@ -250,8 +262,7 @@ public class HoverElevatorBlockEntity extends BlockEntity {
                 for (ServerPlayerEntity player : RECENT_USERS){
                     if (!player.hasStatusEffect(StatusEffects.SLOW_FALLING)){
                         HoverliftAntiDesyncPacket packet = new HoverliftAntiDesyncPacket();
-                        var pkt = ServerPlayNetworking.createS2CPacket(packet.getFabricId(), packet.toBuf());
-                        player.networkHandler.sendPacket(pkt);
+                        OneironautPlatform.sendToPlayer(player, packet);
                     }
                 }
                 RECENT_USERS.clear();
