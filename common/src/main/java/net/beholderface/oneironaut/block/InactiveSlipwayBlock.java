@@ -28,15 +28,29 @@ public class InactiveSlipwayBlock extends Block {
     }
     private static List<Integer> colors;
     public static void init(){
-        Random random = Random.create();
-        List<Integer> colorList = new ArrayList<>();
-        for (int i = 0; i < 32; i++){
-            for(ItemDyePigment pigment : HexItems.DYE_PIGMENTS.values()){
-                FrozenPigment frozen = new FrozenPigment(new ItemStack(pigment), Util.NIL_UUID);
-                colorList.add(ram.talia.hexal.api.FunUtilsKt.nextColour(frozen, random));
+        colors();
+    }
+
+    /**
+     * Initialisation on demand. Architectury's CLIENT_STARTED event does not reach a listener that the
+     * mod registers from inside its own client init on NeoForge, so relying on {@link #init()} left the
+     * colour cache null there and the inactive slipway silently emitted no particles.
+     */
+    private static List<Integer> colors(){
+        List<Integer> current = colors;
+        if (current == null){
+            Random random = Random.create();
+            List<Integer> colorList = new ArrayList<>();
+            for (int i = 0; i < 32; i++){
+                for(ItemDyePigment pigment : HexItems.DYE_PIGMENTS.values()){
+                    FrozenPigment frozen = new FrozenPigment(new ItemStack(pigment), Util.NIL_UUID);
+                    colorList.add(ram.talia.hexal.api.FunUtilsKt.nextColour(frozen, random));
+                }
             }
+            current = colorList;
+            colors = current;
         }
-        colors = colorList;
+        return current;
     }
 
     @Override
@@ -51,6 +65,7 @@ public class InactiveSlipwayBlock extends Block {
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        List<Integer> colors = colors();
         if (colors != null){
             Vec3d particleCenter = Vec3d.ofCenter(pos);
             for(ItemDyePigment pigment : HexItems.DYE_PIGMENTS.values()){

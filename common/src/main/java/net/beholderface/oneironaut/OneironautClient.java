@@ -18,12 +18,9 @@ import net.beholderface.oneironaut.block.blockentity.WispBatteryEntity;
 import net.beholderface.oneironaut.item.ItemLibraryCard;
 import net.beholderface.oneironaut.item.ReverberationRod;
 import net.beholderface.oneironaut.item.WispCaptureItem;
+import net.beholderface.oneironaut.platform.OneironautClientHooks;
 import net.beholderface.oneironaut.registry.OneironautBlockRegistry;
 import net.beholderface.oneironaut.registry.OneironautItemRegistry;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
-import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
-import net.fabricmc.fabric.mixin.client.rendering.DimensionEffectsAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -47,7 +44,7 @@ public class OneironautClient {
     private static int applyBlockRenderLayers(Collection<Block> blocks, RenderLayer layer){
         int applied = 0;
         for (Block block : blocks){
-            BlockRenderLayerMap.INSTANCE.putBlock(block, layer);
+            OneironautClientHooks.putBlockRenderLayer(block, layer);
             applied++;
         }
         return applied;
@@ -56,6 +53,14 @@ public class OneironautClient {
     public static long lastShiftingHoverTick = 0L;
     public static ItemStack lastHoveredShifting = null;
     private static float processObservationPredicate(ItemStack stack, ClientWorld world, LivingEntity holder, int holderID){
+        // Looked up on demand instead of through a cached field: Architectury's CLIENT_STARTED event
+        // does not reach a listener registered from inside the mod's own client init on NeoForge, so
+        // the cached field stayed null and this predicate threw on every render of the item (hotbar,
+        // inventory, dropped item entities) -- which is what crashed the creative inventory.
+        MinecraftClient cachedClient = MinecraftClient.getInstance();
+        if (cachedClient == null){
+            return -0.01f;
+        }
         ClientPlayerEntity cachedPlayer = cachedClient.player;
         final float OFF = 0.99f;
         final float ON = -0.01f;
@@ -90,9 +95,8 @@ public class OneironautClient {
     }
 
     //private static ClientPlayerEntity cachedPlayer = null;
-    private static MinecraftClient cachedClient = null;
     public static MinecraftClient getCachedClient(){
-        return cachedClient;
+        return MinecraftClient.getInstance();
     }
     public static void init() {
 
@@ -102,11 +106,10 @@ public class OneironautClient {
                 registry.register(new Identifier("oneironaut:block/thought_slurry_flowing"));
             });*/
 
-            FluidRenderHandlerRegistry.INSTANCE.register(ThoughtSlurry.STILL_FLUID, ThoughtSlurry.FLOWING_FLUID, new SimpleFluidRenderHandler(
-                    new Identifier("oneironaut:block/thought_slurry"),
-                    new Identifier("oneironaut:block/thought_slurry_flowing"),
-                    0x8621c2
-            ));
+            // Thought slurry's textures and tint are registered by each loader's own client entrypoint
+            // (Fabric: FluidRenderHandlerRegistry, NeoForge: the FluidType's client extensions), because
+            // NeoForge needs them before this method runs. They are defined once, in
+            // ThoughtSlurryAppearance.
             ScryingLensOverlayRegistry.addDisplayer(OneironautBlockRegistry.WISP_BATTERY.get(),
                     WispBatteryEntity::applyScryingLensOverlay
                     );
@@ -136,7 +139,7 @@ public class OneironautClient {
                     OneironautBlockRegistry.CELL.get(), OneironautBlockRegistry.INSTANT_BREAKER_RIFTRESIDUE.get(),
                     OneironautBlockRegistry.PSUEDOAMETHYST_BLOCK_INSUBSTANTIAL.get()};
 
-            BlockRenderLayerMap.INSTANCE.putFluids(RenderLayer.getTranslucent(), ThoughtSlurry.STILL_FLUID, ThoughtSlurry.FLOWING_FLUID);
+            OneironautClientHooks.putFluidRenderLayer(RenderLayer.getTranslucent(), ThoughtSlurry.STILL_FLUID, ThoughtSlurry.FLOWING_FLUID);
 
             Oneironaut.LOGGER.info("Applied cutout layer to " + applyBlockRenderLayers(cutoutBlocks, RenderLayer.getCutout()) + " blocks");
             Oneironaut.LOGGER.info("Applied translucent layer to " + applyBlockRenderLayers(List.of(translucentBlocks), RenderLayer.getTranslucent()) + " blocks");
@@ -157,17 +160,13 @@ public class OneironautClient {
             });
 
             ClientLifecycleEvent.CLIENT_STARTED.register((client)->{
-                //cachedPlayer = client.player;
-                cachedClient = client;
-                if (cachedClient != null){
-                    Oneironaut.LOGGER.info("Cached client object. Player:" + client.player);
-                } else {
-                    Oneironaut.LOGGER.info("Could not cache client object.");
-                }
+                //nothing to cache any more: the client is looked up on demand (see
+                //processObservationPredicate). Kept for the log line and for the slipway colour cache.
+                Oneironaut.LOGGER.info("Client started. Player:" + client.player);
                 InactiveSlipwayBlock.init();
             });
-            DimensionEffectsAccessor.getIdentifierMap().put(Oneironaut.id("noosphere"), new NoosphereDimensionEffects());
-            DimensionEffectsAccessor.getIdentifierMap().put(Oneironaut.id("deep_noosphere"), new DeepNoosphereDimensionEffects());
+            OneironautClientHooks.registerDimensionEffects(Oneironaut.id("noosphere"), NoosphereDimensionEffects::new);
+            OneironautClientHooks.registerDimensionEffects(Oneironaut.id("deep_noosphere"), DeepNoosphereDimensionEffects::new);
         /*} else {
             Oneironaut.LOGGER.info("oh no, forge, aaaaaaaaaaaa");
         }*/
