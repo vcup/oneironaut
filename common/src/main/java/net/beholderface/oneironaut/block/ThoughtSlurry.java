@@ -2,7 +2,6 @@ package net.beholderface.oneironaut.block;
 
 import net.beholderface.oneironaut.Oneironaut;
 import net.beholderface.oneironaut.registry.OneironautItemRegistry;
-import net.beholderface.oneironaut.registry.OneironautMiscRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
@@ -12,7 +11,6 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.state.StateManager;
 import net.minecraft.util.Identifier;
@@ -22,58 +20,60 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
-import org.jetbrains.annotations.Nullable;
 
+/**
+ * Thought slurry.
+ * <p>
+ * Only the {@link Still} and {@link Flowing} subclasses are ever instantiated; both instances are
+ * registered under {@link #ID} and {@link #FLOWING_ID} and are also available as the
+ * {@link #STILL_FLUID} / {@link #FLOWING_FLUID} constants.
+ * <p>
+ * Those constants matter beyond convenience. Vanilla's {@code FluidBlock} caches one {@code FluidState}
+ * per {@code level} value while the block is being constructed, so {@link #getStill()} must not go
+ * through the Fluid registry: on Forge/NeoForge the registry is still empty at that point, which made
+ * every cached state the <em>empty</em> fluid and left the fluid block with nothing to flow or draw.
+ * See {@link ThoughtSlurryBlock#getFluidState(BlockState)} for the other half of that trap.
+ */
+public abstract class ThoughtSlurry extends FlowableFluid {
+    public static final Identifier ID = Oneironaut.id("thought_slurry");
+    public static final Identifier FLOWING_ID = Oneironaut.id("flowing_thought_slurry");
 
+    public static final TagKey<Fluid> TAG = TagKey.of(RegistryKeys.FLUID, ID);
 
-public class ThoughtSlurry extends FlowableFluid {
+    public static final ThoughtSlurry.Flowing FLOWING_FLUID = new ThoughtSlurry.Flowing();
+    public static final ThoughtSlurry.Still STILL_FLUID = new ThoughtSlurry.Still();
+
     @Override
     public boolean matchesType(Fluid fluid) {
         return fluid == getStill() || fluid == getFlowing();
     }
-    public static final Identifier ID =
-            Identifier.of(Oneironaut.MOD_ID, "thought_slurry");
 
-
-
-    public static final Identifier FLOWING_ID =
-            Identifier.of(Oneironaut.MOD_ID, "flowing_thought_slurry");
-
-    public static final ThoughtSlurry.Flowing FLOWING_FLUID =
-            new ThoughtSlurry.Flowing();
-    public static final ThoughtSlurry.Still STILL_FLUID =
-            new ThoughtSlurry.Still();
-
-    //public static FlowableFluid THOUGHT_SLURRY;
-    //public static FlowableFluid THOUGHT_SLURRY_FLOWING;
-
-    public static final TagKey<Fluid> TAG =
-            TagKey.of(RegistryKeys.FLUID, ThoughtSlurry.ID);
-
+    /**
+     * The flowing singleton, deliberately not a registry lookup -- see the class comment.
+     */
     @Override
     public Fluid getFlowing() {
-        return OneironautMiscRegistry.THOUGHT_SLURRY_FLOWING.get();
+        return FLOWING_FLUID;
     }
 
+    /**
+     * The still singleton, deliberately not a registry lookup -- see the class comment.
+     */
     @Override
     public Fluid getStill() {
-        return OneironautMiscRegistry.THOUGHT_SLURRY.get();
+        return STILL_FLUID;
     }
 
-@Override
+    @Override
     public FluidState getFlowing(int level, boolean falling) {
         return (this.getFlowing().getDefaultState().with(LEVEL, level)).with(FALLING, falling);
-        //return ThoughtSlurry.FLOWING_FLUID;
     }
 
+    @Override
+    public abstract boolean isStill(FluidState state);
 
-/*@Override
-    public Fluid getFlowing() {
-        return Flowing.FLOWING_FLUID;
-    }*/
-
-
-
+    @Override
+    public abstract int getLevel(FluidState state);
 
     @Override
     protected boolean isInfinite(World world) {
@@ -96,12 +96,10 @@ public class ThoughtSlurry extends FlowableFluid {
         return 1;
     }
 
-@Override
+    @Override
     public Item getBucketItem() {
         return OneironautItemRegistry.THOUGHT_SLURRY_BUCKET.get();
-       // return Items.LAVA_BUCKET;
     }
-
 
     @Override
     protected boolean canBeReplacedWith(FluidState state, BlockView world, BlockPos pos, Fluid fluid, Direction direction) {
@@ -123,27 +121,6 @@ public class ThoughtSlurry extends FlowableFluid {
         return ThoughtSlurryBlock.INSTANCE.getDefaultState().with(FluidBlock.LEVEL, getBlockStateLevel(state));
     }
 
-    @Override
-    public boolean isStill(FluidState state) {
-        return state.isStill();
-    }
-
-    @Override
-    public int getLevel(FluidState state) {
-        //return state.getLevel();
-        return 8;
-    }
-
-    @Override
-    public RegistryEntry<Fluid> arch$holder() {
-        return super.arch$holder();
-    }
-
-    @Override
-    public @Nullable Identifier arch$registryName() {
-        return super.arch$registryName();
-    }
-
     public static class Flowing extends ThoughtSlurry {
         @Override
         protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder) {
@@ -160,15 +137,14 @@ public class ThoughtSlurry extends FlowableFluid {
         public int getLevel(FluidState state) {
             return state.get(FlowableFluid.LEVEL);
         }
-
     }
 
     public static class Still extends ThoughtSlurry {
+        @Override
         protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder) {
             super.appendProperties(builder);
             builder.add(FlowableFluid.LEVEL);
         }
-
 
         @Override
         public boolean isStill(FluidState state) {
@@ -179,8 +155,5 @@ public class ThoughtSlurry extends FlowableFluid {
         public int getLevel(FluidState state) {
             return 8;
         }
-
     }
-
-
 }
