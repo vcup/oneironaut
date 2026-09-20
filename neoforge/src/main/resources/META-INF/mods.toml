@@ -1,0 +1,76 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+#issueTrackerURL = "https://github.com/beholderface/oneironaut/issues"
+license = "MIT"
+
+[[mods]]
+modId = "oneironaut"
+version = "${version}"
+displayName = "Oneironaut"
+logoFile = "icon.png"
+authors = "beholderface"
+description = '''
+Oneironaut addon for Hex Casting
+'''
+
+# On Minecraft 1.20.1 NeoForge identifies itself with the "forge" mod id and keeps the
+# net.minecraftforge.* packages, so this is what a NeoForge-targeted 1.20.1 mod depends on.
+[[dependencies.oneironaut]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.oneironaut]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20,1.21)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.oneironaut]]
+modId = "architectury"
+mandatory = true
+versionRange = "[9,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.oneironaut]]
+modId = "kotlinforforge"
+mandatory = true
+versionRange = "[4,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.oneironaut]]
+modId = "hexcasting"
+mandatory = true
+versionRange = "[0.11,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.oneironaut]]
+modId = "hexal"
+mandatory = true
+versionRange = "[0.3,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.oneironaut]]
+modId = "moreiotas"
+mandatory = true
+versionRange = "[0.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+# Optional on purpose: Oneironaut ships no book of its own, it only adds entries to Hex Casting's
+# notebook (assets/hexcasting/patchouli_books/...). Those entries are inert when Patchouli is absent, and
+# Hex Casting declares Patchouli itself, so requiring it here would only make the mod refuse to load on a
+# pack where Hex Casting is already handling that.
+[[dependencies.oneironaut]]
+modId = "patchouli"
+mandatory = false
+versionRange = "[1.20,)"
+ordering = "NONE"
+side = "BOTH"

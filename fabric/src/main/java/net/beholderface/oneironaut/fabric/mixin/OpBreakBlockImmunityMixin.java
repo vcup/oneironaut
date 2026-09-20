@@ -1,24 +1,23 @@
-package net.beholderface.oneironaut.mixin;
+package net.beholderface.oneironaut.fabric.mixin;
 
 import at.petrak.hexcasting.fabric.xplat.FabricXplatImpl;
 import net.beholderface.oneironaut.registry.OneironautTags;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.beholderface.oneironaut.MiscAPIKt;
-import net.beholderface.oneironaut.Oneironaut;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 
-//this should have a significantly wider-reaching effect
+/**
+ * Keeps blocks tagged {@code oneironaut:break_immune} safe from Hex Casting's break spell.
+ * <p>
+ * Hex Casting's break check lives in a loader-specific xplat class, so this has to exist once per
+ * loader: the NeoForge twin injects into {@code ForgeXplatImpl}.
+ */
 @Mixin(FabricXplatImpl.class)
 public abstract class OpBreakBlockImmunityMixin {
 

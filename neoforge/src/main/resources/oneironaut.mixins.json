@@ -1,11 +1,14 @@
 {
   "required": true,
-  "package": "net.beholderface.oneironaut.forge.mixin",
+  "package": "net.beholderface.oneironaut.neoforge.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "client": [
+    "DimensionEffectsAccessor"
   ],
   "mixins": [
+    "OpBreakBlockImmunityMixin",
+    "ThoughtSlurryFluidTypeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

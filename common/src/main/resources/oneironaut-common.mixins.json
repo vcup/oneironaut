@@ -19,7 +19,6 @@
     "IotaTypeInvoker",
     "MaxStackSizeMixinVM",
     "MiscWispMixin",
-    "OpBreakBlockImmunityMixin",
     "PlayerCastEnvInvoker",
     "SentinelTrapMixinSummon",
     "ZoneDistImmunityMixin",
